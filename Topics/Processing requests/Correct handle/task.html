@@ -1,0 +1,10 @@
+<h2>Correct handle</h2>
+<div class="step-text">
+<p>Assume that you have the following URL patterns:</p>
+
+<pre><code class="language-python">urlpatterns = [path("candies/Fudge", FudgeView.as_view()),
+               path("candies", CandyView.as_view()),
+               re_path("", IndexView.as_view())]</code></pre>
+
+<p>Which handler will process a request to "candies"?</p>
+</div>

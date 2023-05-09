@@ -1,0 +1,134 @@
+<h2>Processing requests</h2>
+<div class="step-text">
+<p>Any web application is here to provide and receive information from clients. A client sends a request to the server, and it answers with some response. Usually, the communication between these two sides is processed by the HTTP protocol using <code class="language-python">GET</code>, <code class="language-python">POST</code> methods and also some other types. While HTTP protocol defines multiple different methods, only <code class="language-python">GET</code> and <code class="language-python">POST</code> is used by web browsers. Other methods are most commonly used in REST APIs; you can read more about them in the <a href="https://restfulapi.net/http-methods/" rel="noopener noreferrer nofollow" target="_blank">REST API tutorial</a>.</p>
+<p>This topic will focus on processing <code class="language-python">GET</code> requests in Django as they are most frequently used. As the name suggests, they are used to GET some data from the server.</p>
+<h5 id="processing-get-requests">Processing GET requests</h5>
+<p>My friend Willy Wonka heard about Django and wanted to use it for advertising the candy his factory makes. To help him reach the goal, we will create a simple response with candies.</p>
+<p>We assume that the name of the Django project is <code class="language-python">factory</code> and the application name is <code class="language-python">candies</code><em>.</em></p>
+<p></p><div class="alert alert-warning">Don't forget to add "candies" to INSTALLED_APPS in the <em>settings.py</em> file</div>
+<p>Let's look at the project layout:</p>
+<pre><code class="language-python">candies = {
+    "Fudge":  {
+        "color": "beige",
+        "price": "priceless",
+        "available": 100,
+    },
+    "Chocolate shock": {
+        "color": "brown",
+        "price": "precious",
+        "available": 50,
+    },
+    "Marshmallow" : {
+        "color": "pink",
+        "price": "all the money in the world",
+        "available": 200,
+    },
+}</code></pre>
+<p>Add this dictionary right to the top of the <em>candies/views.py</em> file.</p>
+<p>On the main page, Willy wants to put only the list of what he has and nothing else. So when you go to the site, you send a <code class="language-python">GET</code> request to his service. <code class="language-python">GET</code> is a method to receive data from the server.</p>
+<p>Every request to a current address of the Django application is processed with <strong>view functions. </strong>These are methods that take a <strong>request</strong> object (<code class="language-python">HttpRequest</code><strong> </strong>class instance) as an argument and then return a response to the client. The request object contains all the essential data about the request itself: request type, for example, and many more that we'll explore later. The <strong>response</strong> object is also an inheritor of the Django built-in class <code class="language-python">HttpResponse</code>. </p>
+<p>Let's add this piece of code to the <em>candies/views.py</em> module:</p>
+<pre><code class="language-python">from django.http import HttpResponse
+
+def main_page_view(request):
+    if request.method == "GET":
+        html =  "\n".join(f"&lt;div&gt;{candy}&lt;/div&gt;" for candy in candies)
+        return HttpResponse(html)</code></pre>
+<p>View functions are just like usual Python methods. As described above, our brand new <code class="language-python">main_page_view</code> function takes <code class="language-python">request</code><strong> </strong>as an argument and returns an <code class="language-python">HttpResponse</code> object (import it from <code class="language-python">django.http</code>).</p>
+<p>Every view function processes a <code class="language-python">GET</code> request by default, but to clarify the example, we're explicitly checking if the request method was <code class="language-python">GET</code>. If the same view function is created to process multiple request methods, we can easily add more if-clauses and directions on what to do when each particular method is triggered. For example, if the <code class="language-python">request.method</code> is <strong>POST</strong>, you may want to process some incoming data as well. </p>
+<p>So, back to our sweet matters: passing HTML as a string to the <code class="language-python">HttpResponse</code> class, we return a simple HTML page with a list of candies. The Django application does the rest of the work to send the data to the client. It's that simple to make a response.</p>
+<h5 id="url-routing">URL Routing</h5>
+<p>We create request handlers, but how does Django choose the appropriate one? In Django applications, we store all the addresses in <em>urls.py</em> files. Usually, there is one main <em>urls.py</em><strong> </strong>located in your project directory, and each application has a separate urls.py module located as <em>&lt;app_name&gt;/urls.py</em><strong>. </strong>Technically, you can store all your addresses inside the main <em>urls.py</em> file, but that's only acceptable when working on a small project. As the project grows, you'll have to store more and more URLs, and it's better to separate them instead of keeping thousands of paths in one file. This approach will also make it easier to re-use the application in other projects, as app-specific routing is defined within that app rather than on the project level.</p>
+<p>In this topic, we'll start with this concept right away. Let's create an <em>urls.py</em> file in your <code class="language-python">candies</code> app and put some code there:</p>
+<pre><code class="language-python">from django.urls import path
+from .views import main_page_view
+
+urlpatterns = [
+    path("candies/", main_page_view),
+]
+</code></pre>
+<p>Then add the following lines to your project's <em>urls.py</em>:</p>
+<pre><code class="language-python">from django.urls import include, path
+
+urlpatterns = [
+    path('', include('candies.urls')),
+]</code></pre>
+<p>This means that all URLs defined in <em>candies/urls.py</em><strong> </strong>are accessible at the root address of your Django app. So now, for example, if Willy's site has the hostname<em> www.willywonka.com</em>, then the assortment page will be available at the address <em>www.willywonka.com/candies/.</em> </p>
+<p>To bind a link with an appropriate handler, we called the <code class="language-python">path()</code> function and added the result to the <code class="language-python">urlpatterns</code> list. The first argument of <code class="language-python">path()</code> receives a string describing a link pattern that comes after the hostname. The second argument is a handler that will process a request (<code class="language-python">main_page_view</code> in the example above) or a list of other URL patterns that have paths with addresses and handlers (<code class="language-python">include('candies.urls')</code>). Note that if routing is defined with <code class="language-python">include()</code> function, the part of the URL that was matched is removed before proceeding to <em>candies.urls</em>, so we could get the same result of a call to www.willywonka.com/candies/ if routing was defined as below</p>
+<p><em>candies/urls.py</em>:</p>
+<pre><code class="language-python">urlpatterns = [
+    path("", main_page_view),
+]
+</code></pre>
+<p><em>urls.py:</em></p>
+<pre><code class="language-python">urlpatterns = [
+    path('candies/', include('candies.urls')),
+]</code></pre>
+<p>The link pattern may be a simple string and a mapping in case we need to get output depending on the link input. Let's see that as an example.</p>
+<h5 id="passing-parameters-to-urls">Passing parameters to URLs</h5>
+<p>What if we want to display detailed information for each candy on a separate page? Of course, we could add the three new URLs to the <em>candies/urls.py</em>: <code class="language-python">/candies/Fudge/</code>, <code class="language-python">/candies/Chocolate_Shock/</code>, and <code class="language-python">/candies/Marshmallow/</code>. All good, but what if we have a hundred different types of candies on our website? We don't want to type this many addresses by hand, do we? Especially when they look so similar. </p>
+<p>That's when the URL patterns come in handy. Let's add one single line to <em>candies/urls.py</em><strong> </strong>(to the <code class="language-python">patterns</code> list):</p>
+<pre><code class="language-python">path("candies/&lt;name&gt;/", candy_info_view)</code></pre>
+<p>This pattern will process any request sent to <code class="language-python">/candies/any_value/</code>. Don't forget to import <code class="language-python">candy_info_view</code> from <code class="language-python">.views</code>, we'll create it in a moment.</p>
+<p></p><div class="alert alert-warning">Note that Django checks all the URLs individually in the order they are placed inside the <code class="language-python">urlpatterns</code> list until it finds a function suitable for this address. This means if at some point you'll want to create the <code class="language-python">/candies/discounts/</code> path, make sure to put it <em>before</em> the <code class="language-python">/candies/&lt;name&gt;/</code> path. Otherwise, the <code class="language-python">discounts</code><strong> </strong>view will never be reached. </div>
+<p>Now, let's create a view to display detailed info on each candy. Add the following method to <em>candies/views.py</em>:</p>
+<pre><code class="language-python">from django.http import HttpResponse
+
+def candy_info_view(request, name):
+    title =  "&lt;h1&gt;name&lt;/h1&gt;"
+    html =  "\n".join(f"&lt;div&gt;{attr}: {value}&lt;/div&gt;" for attr, value in candies[name].items())
+    return HttpResponse(title+html)
+</code></pre>
+<p>As you see, the <code class="language-python">name</code><strong> </strong>argument received from the URL pattern is passed as an argument to the view function. After that, we can process the value and send a response depending on the received input argument value.</p>
+<h5 id="class-based-views">Class-based views</h5>
+<p>So, we have created an app with only one type of view and only one type of request. Sometimes apps can be more complicated, with many and many different pages. In this case, it can be impractical to use separate functions for every possible request, primarily when some should be associated with others. For such cases, Django has <strong>Class-based views</strong> (CBV). It's an alternative way to implement views as Python objects instead of functions. With class-based views, we can create different methods for the same view instead of conditional branching and use inheritance instead of using the same code repeatedly. They do not replace function-based views, rather they are mainly used to keep the codes <strong>DRY</strong> (<em>don't repeat yourself</em>, a principle of software development aimed at reducing repetition of software patterns) and make the codes extendable. Generally, class-based views inherit and override the generic view classes or the base classes that Django has provided. These generic and base classes are used as boilerplates. Using class-based views, we can better structure our codes. However, class-based views are harder to implement and read and require a good understanding of inheritance and other concepts of OOP.</p>
+<p>So, now we can change our view this way:</p>
+<pre><code class="language-python">from django.http import HttpResponse
+from django.views import View
+
+class MainPageView(View):
+    def get(self, request, *args, **kwargs):
+        html =  "\n".join(f"&lt;div&gt;{candy}&lt;/div&gt;" for candy in candies)
+        return HttpResponse(html)
+
+class CandyView(View):
+    def get(self, request, candy_name, *args, **kwargs):
+        candy_info = "".join(
+            f"&lt;tr&gt;&lt;td&gt;{key}:&lt;/td&gt;&lt;td&gt;{value}&lt;/td&gt;&lt;/tr&gt;"
+            for key, value in candies[candy_name].items()
+        )
+        return HttpResponse(f"&lt;table&gt;&lt;tbody&gt;{candy_info}&lt;/tbody&gt;&lt;/table&gt;")</code></pre>
+<p>We make a new class and inherit them from <code class="language-python">view</code>. To provide a method to handle the <code class="language-python">GET</code> request, we define a method with the name <em>get</em>. This is a general rule in Django, so if you want to make a POST handler, you define a method with the name <em>post</em>.</p>
+<p>Change the <em>urls.py</em> module, and don't forget to import our new classes:</p>
+<pre><code class="language-python">from django.urls import path
+from candies.views import MainPageView, CandyView
+
+urlpatterns = [
+    path("candies/", MainPageView.as_view()),
+    path("candies/&lt;name&gt;/", CandyView.as_view()),
+]</code></pre>
+<p>For Django class-based views, we access an appropriate view function by calling the class method <code class="language-python">as_view()</code>. This does all the work of creating an instance of the class and ensuring that the correct handler methods are called for incoming HTTP requests.</p>
+<h5 id="not-found-pages">Not Found Pages</h5>
+<p>For each customer wishing to know more about a particular candy, make another page and class to process that request. And if the customer asks us about a nonexistent candy, we've got to report that we couldn't find it. The corresponding HTTP response status code is <code class="language-python">404 Not Found</code>, but we don't see any codes in the previous example.</p>
+<p>Django does a lot of work under the hood. The <code class="language-python">HttpResponse</code> sets the status code <code class="language-python">200 OK</code> in the answer for you, which means that the communication was OK. We can either change this code in the <code class="language-python">HttpResponse</code> class (<code class="language-python">HttpResponse(status=404)</code>), or use the exception class <code class="language-python">Http404</code><strong>,</strong> which will signal to a user that they're trying to GET a page that doesn't exist.</p>
+<p>HTTP defines multiple response status codes to handle communication easily. Still, the general rule is that codes starting with 2 indicate success, ones that begin with 4 mean client-side errors (wrong URL in cases of 404), and ones that begin with 5 mean server-side errors.</p>
+<p>Let's make a handler for a custom candy page in the same module:</p>
+<pre><code class="language-python">from django.http import HttpResponse, Http404
+from django.views import View
+
+class CandyView(View):
+    def get(self, request, candy_name, *args, **kwargs):
+        if candy_name not in candies:
+            raise Http404  # or return HttpResponse(status=404)
+
+        candy_info = "".join(
+            f"&lt;tr&gt;&lt;td&gt;{key}:&lt;/td&gt;&lt;td&gt;{value}&lt;/td&gt;&lt;/tr&gt;"
+            for key, value in candies[candy_name].items()
+        )
+        return HttpResponse(f"&lt;table&gt;&lt;tbody&gt;{candy_info}&lt;/tbody&gt;&lt;/table&gt;")</code></pre>
+<p>As you see, the third parameter in our <code class="language-python">GET</code> method is the cryptic <code class="language-python">candy_name</code>. If we have this candy, we'll display all the information about it. But if we don't have one, we raise a <code class="language-python">Http404</code> exception because we can't find it in our stock.</p>
+<p></p><div class="alert alert-warning">We return an instance of the <code class="language-python">HttpResponse</code>, but we raise <code class="language-python">Http404</code> since <code class="language-python">Http404</code> is the exception class</div>
+<h5 id="conclusion">Conclusion</h5>
+<p>To process a request in the Django application, you should define a handler and implement all methods that it can process. You can create a view function<strong> </strong>that matches the desired HTTP address or use a class-based view. If you inherit this class from <code class="language-python">View</code>, you should check the preferred HTTP method with the same name as the method in your class. Specifically, if you want to process a <code class="language-python">GET</code> request, define the <code class="language-python">GET</code> method and return an instance of the Django <code class="language-python">HttpResponse</code> class.</p>
+<p>You can then bind this handler to the link it belongs to. Just add it to the list of <code class="language-python">urlpatterns</code> in the <em>urls.py</em> module.</p>
+</div>

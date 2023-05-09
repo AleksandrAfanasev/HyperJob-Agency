@@ -1,0 +1,18 @@
+type: choice
+is_multiple_choice: true
+options:
+- text: '"get" returns a QuerySet and "filter" returns an instance of a Model'
+- text: '"filter" may raise DoesNotExist exception while "get" may not'
+- text: '"get" may raise DoesNotExist exception while "filter" may not'
+- text: '"get" returns an instance of a Model and "filter" returns a QuerySet'
+files:
+- name: main.py
+  visible: true
+  text: |+
+    #  You can experiment here, it won’t be checked
+
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/7010#comment
+status: Solved
+record: -1
+local_check: false

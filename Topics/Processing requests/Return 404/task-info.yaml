@@ -1,0 +1,20 @@
+type: choice
+is_multiple_choice: true
+options:
+- text: <code>raise HttpResponse(404)</code>
+- text: <code>raise Http404</code>
+- text: <code>raise 404</code>
+- text: <code>return HttpResponse(status=404)</code>
+- text: <code>return Http404</code>
+- text: <code>return "404"</code>
+files:
+- name: main.py
+  visible: true
+  text: |+
+    #  You can experiment here, it won’t be checked
+
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/6476#comment
+status: Solved
+record: -1
+local_check: false

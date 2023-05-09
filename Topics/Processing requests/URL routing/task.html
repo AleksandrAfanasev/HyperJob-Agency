@@ -1,0 +1,13 @@
+<h2>URL routing</h2>
+<div class="step-text">
+<p>Assume that you have the following urlpatterns:</p>
+
+<pre><code class="language-python">urlpatterns = [
+   path("", IndexView.as_view()),
+   path("candies", CandyView.as_view()),
+   path("candies/Fudge", FudgeView.as_view()),
+]
+</code></pre>
+
+<p>Which handler will process a request to "candies/Fudge"?</p>
+</div>

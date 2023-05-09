@@ -1,0 +1,12 @@
+{% extends 'vacancy/base.html' %}
+
+{% block content %}
+<h2>Vacancies</h2>
+
+{% for vacancy in vacancy %}
+<div>
+    {{ vacancy.author }}: {{ vacancy.description }}
+</div>
+{% endfor %}
+
+{% endblock %}

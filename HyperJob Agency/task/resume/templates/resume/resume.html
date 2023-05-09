@@ -1,0 +1,17 @@
+{% extends 'vacancy/base.html' %}
+
+{% block content %}
+
+{% for resume in resumes %}
+<div>
+    {{resume.author}}: {{resume.description}}
+</div>
+{% endfor %}
+
+<form action="/newResume" method="post">{% csrf_token %}
+    <label>Enter name: </label>
+    <input type="text" name="description" placeholder="Default name for team.">
+    <button type="submit">Submit</button>
+</form>
+
+{% endblock %}
